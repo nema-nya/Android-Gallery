@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SecondFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:id="@+id/picka"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="hello snd frag" />
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="300dp"
+        android:layout_margin="30dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:hint="image description"
+        android:gravity="center"
+        android:maxLength="45"
+        android:maxLines="3"
+        android:singleLine="true"
+        android:inputType="text"
+        android:id="@+id/desc_text"
+        ></EditText>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="30dp"
+        android:text="Save"
+        android:id="@+id/save_image"
+        android:textAllCaps="false"
+        ></Button>
+</FrameLayout>

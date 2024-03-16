@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_first_fragment"
+            android:icon="@drawable/home_icon"
+            android:title="Home" />
+
+        <item
+            android:id="@+id/nav_second_fragment"
+            android:icon="@drawable/new_post_icon"
+            android:title="New Post" />
+        <item
+            android:id="@+id/nav_third_fragment"
+            android:icon="@drawable/profile_icon"
+            android:title="Profile"/>
+    </group>
+
+</menu>
