@@ -8,7 +8,6 @@ import android.graphics.Matrix
 import android.location.Location
 import android.media.ExifInterface
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -18,10 +17,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.RequiresApi
+import com.example.myapplication.data.AppDatabase
+import com.example.myapplication.data.Image
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import org.w3c.dom.Text
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 
@@ -30,6 +32,7 @@ class SecondFragment : Fragment() {
 
     private lateinit var imageView: ImageView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var descText: TextView
     private var latitue: Double = 0.0
     private var longitute: Double = 0.0
 
@@ -50,7 +53,6 @@ class SecondFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_second, container, false)
-
         imageView = view.findViewById(R.id.image_view)
         val imageUri: Uri? = arguments?.getParcelable("uri")
         val imagePath = arguments?.getString("image_path")
@@ -95,7 +97,10 @@ class SecondFragment : Fragment() {
 
         if(imagePath != null || imageUri != null) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-
+            descText = view.findViewById(R.id.desc_text)
+            Log.e("BRICK", descText.toString())
+            Log.e("BRICK", descText.text.toString())
+            var desc = descText.text
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 location?.let {
                     this.latitue = it.latitude
@@ -103,8 +108,18 @@ class SecondFragment : Fragment() {
                 }
 
                 view.findViewById<Button>(R.id.save_image).setOnClickListener {
-                    Log.e("P", "PISSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSs")
-                    openGoogleMaps(latitue, longitute)
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val db = AppDatabase.getDatabase(requireContext())
+                        val image = Image(0, imagePath!!, longitute, latitue, desc.toString())
+                        db.imageDao().insert(image)
+                    }
+
+
+                    val newFragment = ThirdFragment()
+                    val fragmentManager = activity?.supportFragmentManager
+                    val fragmentTransaction = fragmentManager?.beginTransaction()
+                    fragmentTransaction?.replace(R.id.flContent, newFragment)
+                    fragmentTransaction?.commit()
                 }
             }
 

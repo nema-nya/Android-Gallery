@@ -24,6 +24,7 @@
         android:hint="image description"
         android:gravity="center"
         android:maxLength="45"
+        android:text=""
         android:maxLines="3"
         android:singleLine="true"
         android:inputType="text"

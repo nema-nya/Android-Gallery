@@ -1,11 +1,12 @@
 package com.example.myapplication
 
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Instrumentation.ActivityResult
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -16,12 +17,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
-import androidx.fragment.app.FragmentManager
-import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -43,14 +45,44 @@ class FirstFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun moveImageToGallery(context: Context, sourcePath: String, fileName: String): String? {
+        val galleryDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "my app")
+        if (!galleryDir.exists()) {
+            galleryDir.mkdirs()
+        }
+        val destFile = File(galleryDir, fileName)
+
+        try {
+            Log.e("E", sourcePath)
+            Log.e("E", Paths.get(sourcePath).toString())
+            Files.move(Paths.get(sourcePath), Paths.get(destFile.absolutePath), StandardCopyOption.REPLACE_EXISTING)
+            val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            val contentUri = Uri.fromFile(destFile)
+            mediaScanIntent.data = contentUri
+            context.sendBroadcast(mediaScanIntent)
+            Log.e("E", "moved")
+        } catch (e: Exception) {
+            Log.e("E", "not moved")
+            e.printStackTrace()
+        }
+        return destFile.absolutePath
+    }
+
+    @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pickImageFromCamera = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val fragmentB = SecondFragment()
                 val bundle = Bundle()
+                val p = currentPhotoPath.split("/")
+                val fName = p.get(p.size - 1)
+                Log.e("E", fName)
+                currentPhotoPath = moveImageToGallery(requireContext(), currentPhotoPath!!, fName)!!!!
                 bundle.putString("image_path", currentPhotoPath)
                 fragmentB.arguments = bundle
+                Log.e("E", currentPhotoPath)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.flContent, fragmentB)
                     .commit()

@@ -13,6 +13,11 @@
             android:id="@+id/nav_third_fragment"
             android:icon="@drawable/profile_icon"
             android:title="Profile"/>
+
+        <item
+            android:id="@+id/nav_map_fragment"
+            android:icon="@drawable/baseline_map_24"
+            android:title="Map"/>
     </group>
 
 </menu>

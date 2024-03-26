@@ -20,6 +20,7 @@
             android:layout_height="match_parent" />
     </LinearLayout>
     <com.google.android.material.navigation.NavigationView
+        app:headerLayout="@layout/nav_header"
         android:id="@+id/nvView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
