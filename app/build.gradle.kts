@@ -72,7 +72,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     kapt("com.github.bumptech.glide:compiler:4.4.0")
     implementation("androidx.room:room-ktx:2.6.1")
-//    implementation("androidx.room:room-runtime:2.2.4")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -80,28 +79,14 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-
     val room_version = "2.6.1"
-
     implementation("androidx.room:room-runtime:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
-
-    // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$room_version")
-
-    // optional - RxJava2 support for Room
     implementation("androidx.room:room-rxjava2:$room_version")
-
-    // optional - RxJava3 support for Room
     implementation("androidx.room:room-rxjava3:$room_version")
-
-    // optional - Guava support for Room, including Optional and ListenableFuture
     implementation("androidx.room:room-guava:$room_version")
-
-    // optional - Test helpers
     testImplementation("androidx.room:room-testing:$room_version")
-
-    // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$room_version")
 
 }

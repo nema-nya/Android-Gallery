@@ -3,14 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SecondFragment">
+    tools:context=".SavePicture">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:id="@+id/picka"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="hello snd frag" />
 
     <ImageView
         android:id="@+id/image_view"

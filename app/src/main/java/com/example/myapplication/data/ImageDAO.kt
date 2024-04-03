@@ -12,6 +12,10 @@ interface ImageDao {
     @Insert
     suspend fun insert(image: Image)
 
+
+    @Query("SELECT * FROM images")
+    fun getAllImagesLiveData(): LiveData<List<Image>>
+
     @Query("DELETE FROM images WHERE id = :id")
     suspend fun deleteImageById(id: Int)
 

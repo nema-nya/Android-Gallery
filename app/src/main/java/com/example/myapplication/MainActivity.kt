@@ -7,8 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.location.Location
-import android.view.GestureDetector
-import android.view.MotionEvent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -31,63 +29,82 @@ import androidx.fragment.app.FragmentManager
 import com.example.myapplication.data.ApiClient
 import com.example.myapplication.data.OpenWeatherMapService
 import com.example.myapplication.data.WeatherData
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.navigation.NavigationView
-import org.w3c.dom.Text
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 
-class MainActivity<Fragment : Any> : AppCompatActivity() {
+class MainActivity: AppCompatActivity() {
 
     lateinit var mDrawer: DrawerLayout
     lateinit var toolbar: Toolbar
     lateinit var nvDrawer: NavigationView
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
 
     private val storageActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         if (Environment.isExternalStorageManager()) {
-            // Manage External Storage Permissions Granted
-            Log.d("MainActivity", "Manage External Storage Permissions Granted")
-        } else {
-            Toast.makeText(this, "Storage Permissions Denied", Toast.LENGTH_SHORT).show()
+            Log.d("MA", "b1")
         }
     } else {
-        // Below Android 11
         if (result.resultCode == Activity.RESULT_OK) {
-            Log.v("MainActivity", "OK Result for Permissions")
+            Log.v("MA", "b2")
         }
     }
 }
 
 
     private val drawerToggle: ActionBarDrawerToggle? = null
+    private fun requestPermissionsIfNotGranted(permissions: Array<String>, requestCode: Int) {
+        val permissionsToRequest = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }.toTypedArray()
 
-    private val STORAGE_PERMISSION_CODE = 23
-
-    private fun requestForStoragePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                val uri = Uri.fromParts("package", packageName, null)
-                intent.data = uri
-                storageActivityResultLauncher.launch(intent)
-            } catch (e: Exception) {
-                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                storageActivityResultLauncher.launch(intent)
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != 23 ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != 23) {
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE), 1)
-            }
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsToRequest, requestCode)
         }
     }
 
+    private fun requestForAllPermissions() {
+        requestPermissionsIfNotGranted(
+            arrayOf(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.CAMERA,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_NETWORK_STATE,
+                Manifest.permission.WAKE_LOCK
+            ),
+            1
+        )
+    }
+
+    private fun requestForStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+            } else {
+                try {
+                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    storageActivityResultLauncher.launch(intent)
+                } catch (e: Exception) {
+                }
+            }
+        } else {
+            requestPermissionsIfNotGranted(
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                1
+            )
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,87 +112,90 @@ class MainActivity<Fragment : Any> : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         requestForStoragePermissions()
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_MEDIA_IMAGES), 1001)
-        } else if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 1002)
-        } else if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 1003)
-        } else if(ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET), 1004)
-        } else if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_NETWORK_STATE), 1005)
+        requestForAllPermissions()
+
+        val fragmentManager: FragmentManager = supportFragmentManager
+
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        mDrawer = findViewById(R.id.drawer_layout)
+        nvDrawer = findViewById(R.id.nvView)
+        setupDrawerContent(nvDrawer)
+
+        val drawerToggle = setupDrawerToggle()
+        drawerToggle!!.isDrawerIndicatorEnabled = true
+        drawerToggle.syncState()
+
+        loadWeatherData()
+
+        val fragment = if (resources.getBoolean(R.bool.is_tablet)) {
+            Log.e("ERR", resources.getBoolean(R.bool.is_tablet).toString())
+            CaptureImage()
         } else {
-
-
-            toolbar = findViewById<Toolbar>(R.id.toolbar)
-
-            setSupportActionBar(toolbar)
-
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-            mDrawer = findViewById<DrawerLayout>(R.id.drawer_layout)
-
-            nvDrawer = findViewById<NavigationView>(R.id.nvView)
-
-
-
-            setupDrawerContent(nvDrawer)
-
-            val drawerToggle = setupDrawerToggle()
-
-            drawerToggle!!.isDrawerIndicatorEnabled = true
-            drawerToggle.syncState()
-
-            getCurrentLocation()
-            loadWeatherData(latitude, longitude)
-
+            ProfilePage()
         }
 
+        fragmentManager.beginTransaction()
+            .replace(R.id.flContent, fragment)
+            .apply {
+                if (resources.getBoolean(R.bool.is_tablet)) {
+                    replace(R.id.flContentTwo, MapFragment())
+                }
+            }
+            .commit()
     }
 
     @SuppressLint("MissingPermission")
-    private fun getCurrentLocation() {
+    private fun getCurrentLocation(callback: (Location?) -> Unit) {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                this.latitude = location.latitude
-                this.longitude = location.longitude
-            }
+            callback(location)
         }
     }
 
-    private fun loadWeatherData(lat: Double, long: Double) {
-        val openWeatherMapService = ApiClient.getInstance().create(OpenWeatherMapService::class.java)
-        openWeatherMapService.getCurrentWeatherData(lat, long, "010bc370317c248f931f293ca00adb2a").enqueue(object :
-            Callback<WeatherData> {
-            override fun onResponse(call: Call<WeatherData>, response: Response<WeatherData>) {
-                if (response.isSuccessful) {
-                    val weatherData = response.body()
-                    if (weatherData != null) {
-                        Log.e("L", weatherData.name)
-                        updateUI(weatherData)
-                    }
-                } else {
-                    Log.e("WeatherData", "Response error: ${response.code()} ${response.message()} ${call.request().url}}")
-                }
-            }
 
-            override fun onFailure(call: Call<WeatherData>, t: Throwable) {
-                Log.e("WeatherData", "Error: ${t.message}")
-            }
-        })
-    }
+
+    private fun loadWeatherData() {
+        getCurrentLocation { location ->
+            Log.e("LOC", location.toString())
+            val openWeatherMapService =
+                ApiClient.getInstance().create(OpenWeatherMapService::class.java)
+            openWeatherMapService.getCurrentWeatherData(
+                location!!.latitude,
+                location!!.longitude,
+                "010bc370317c248f931f293ca00adb2a",
+                "metric"
+            ).enqueue(object :
+                Callback<WeatherData> {
+                override fun onResponse(call: Call<WeatherData>, response: Response<WeatherData>) {
+                    if (response.isSuccessful) {
+                        val weatherData = response.body()
+                        if (weatherData != null) {
+                            Log.e("L", weatherData.toString())
+                            Log.e("L", "$location.latitude $location.longitude")
+                            updateUI(weatherData)
+                        }
+                    } else {
+                        Log.e(
+                            "WeatherData",
+                            "Response error: ${response.code()} ${response.message()} ${call.request().url}}"
+                        )
+                    }
+                }
+
+                override fun onFailure(call: Call<WeatherData>, t: Throwable) {
+                    Log.e("WeatherData", "Error: ${t.message}")
+                }
+            })
+        }
+        }
 
     private fun updateUI(weatherData: WeatherData) {
-//        cityNameTextView.text = weatherData.cityName
-//        temperatureTextView.text = "${weatherData.temperature}°C"
-//        weatherDescriptionTextView.text = weatherData.weatherDescription
-        // Load weather icon using a library like Picasso or Glide
         val headerView: View = nvDrawer.getHeaderView(0)
         val headerTextView: TextView = headerView.findViewById(R.id.header_text)
-        headerTextView.text = "Trenutno vreme od tvoje keve je:"
+        headerTextView.text = "the current weather is ${weatherData.weather[0].description} with the tempeture of ${weatherData.main.temp}"
     }
 
 
@@ -187,45 +207,28 @@ class MainActivity<Fragment : Any> : AppCompatActivity() {
 
     private fun setupDrawerContent(navigationView: NavigationView) {
         navigationView.setNavigationItemSelectedListener { menuItem ->
-            uncheckItems()
             selectDrawerItem(menuItem)
             true
         }
     }
 
-    fun uncheckItems() {
-        for(i in nvDrawer.menu) {
-            i.isChecked = false
-        }
-    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-
-        // Pass any configuration change to the drawer toggles
         drawerToggle!!.onConfigurationChanged(newConfig)
     }
 
 
     fun selectDrawerItem(menuItem: MenuItem) {
-        // Create a new fragment and specify the fragment to show based on nav item clicked
-        var fragment: Fragment? = null
-
         val fragmentClass = when (menuItem.itemId) {
-            R.id.nav_first_fragment -> FirstFragment()
-            R.id.nav_second_fragment -> SecondFragment()
-            R.id.nav_third_fragment -> ThirdFragment()
+            R.id.nav_second_fragment -> CaptureImage()
+            R.id.nav_third_fragment -> ProfilePage()
             R.id.nav_map_fragment -> MapFragment()
-            else -> FirstFragment()
+            else -> ProfilePage()
         }
 
         val fragmentManager: FragmentManager = supportFragmentManager
         fragmentManager.beginTransaction().replace(R.id.flContent, fragmentClass).commit()
-
-
-        // Highlight the selected item has been done by NavigationView
-        menuItem.isChecked = true
-
 
         title = menuItem.title
 
@@ -236,5 +239,10 @@ class MainActivity<Fragment : Any> : AppCompatActivity() {
         return if (drawerToggle!!.onOptionsItemSelected(item)) {
             true
         } else super.onOptionsItemSelected(item)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadWeatherData()
     }
 }
