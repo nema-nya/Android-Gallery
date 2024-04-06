@@ -16,14 +16,12 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.iterator
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.example.myapplication.data.ApiClient
@@ -38,21 +36,21 @@ import retrofit2.Response
 
 class MainActivity: AppCompatActivity() {
 
-    lateinit var mDrawer: DrawerLayout
-    lateinit var toolbar: Toolbar
-    lateinit var nvDrawer: NavigationView
+    private lateinit var mDrawer: DrawerLayout
+    private lateinit var toolbar: Toolbar
+    private lateinit var nvDrawer: NavigationView
 
     private val storageActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        if (Environment.isExternalStorageManager()) {
-            Log.d("MA", "b1")
-        }
-    } else {
-        if (result.resultCode == Activity.RESULT_OK) {
-            Log.v("MA", "b2")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                Log.d("MA", "b1")
+            }
+        } else {
+            if (result.resultCode == Activity.RESULT_OK) {
+                Log.v("MA", "b2")
+            }
         }
     }
-}
 
 
     private val drawerToggle: ActionBarDrawerToggle? = null
@@ -165,7 +163,7 @@ class MainActivity: AppCompatActivity() {
             openWeatherMapService.getCurrentWeatherData(
                 location!!.latitude,
                 location!!.longitude,
-                "010bc370317c248f931f293ca00adb2a",
+                "",
                 "metric"
             ).enqueue(object :
                 Callback<WeatherData> {
@@ -195,12 +193,12 @@ class MainActivity: AppCompatActivity() {
     private fun updateUI(weatherData: WeatherData) {
         val headerView: View = nvDrawer.getHeaderView(0)
         val headerTextView: TextView = headerView.findViewById(R.id.header_text)
-        headerTextView.text = "the current weather is ${weatherData.weather[0].description} with the tempeture of ${weatherData.main.temp}"
+        headerTextView.text = "the current weather is ${weatherData.weather[0].description} with the temperature of ${weatherData.main.temp}"
     }
 
 
 
-    private fun setupDrawerToggle(): ActionBarDrawerToggle? {
+    private fun setupDrawerToggle(): ActionBarDrawerToggle {
         return ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.open_drawer, R.string.close_drawer)
     }
 
@@ -219,12 +217,19 @@ class MainActivity: AppCompatActivity() {
     }
 
 
-    fun selectDrawerItem(menuItem: MenuItem) {
-        val fragmentClass = when (menuItem.itemId) {
-            R.id.nav_second_fragment -> CaptureImage()
-            R.id.nav_third_fragment -> ProfilePage()
-            R.id.nav_map_fragment -> MapFragment()
-            else -> ProfilePage()
+    private fun selectDrawerItem(menuItem: MenuItem) {
+        val fragmentClass = when {
+            resources.getBoolean(R.bool.is_tablet) -> when (menuItem.itemId) {
+                R.id.nav_second_fragment -> CaptureImage()
+                R.id.nav_third_fragment -> ProfilePage()
+                else -> ProfilePage()
+            }
+            else -> when (menuItem.itemId) {
+                R.id.nav_second_fragment -> CaptureImage()
+                R.id.nav_third_fragment -> ProfilePage()
+                R.id.nav_map_fragment -> MapFragment()
+                else -> ProfilePage()
+            }
         }
 
         val fragmentManager: FragmentManager = supportFragmentManager

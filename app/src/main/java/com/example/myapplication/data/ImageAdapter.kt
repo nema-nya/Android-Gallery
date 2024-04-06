@@ -2,7 +2,6 @@ package com.example.myapplication.data
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,7 +32,7 @@ class ImageAdapter(private val images: MutableList<Image>, private val imageDao:
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val image = images[position]
-        val des = images[position].description.toString()
+        val des = images[position].description
         val location =
             images[position].latitude.toString() + " " + images[position].longitude.toString()
         Glide.with(holder.itemView.context)
@@ -44,8 +43,7 @@ class ImageAdapter(private val images: MutableList<Image>, private val imageDao:
         holder.imageView.setOnClickListener {
             val latitude = image.latitude
             val longitude = image.longitude
-            val label = des
-            val gmmIntentUri = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($label)")
+            val gmmIntentUri = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($des)")
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
             mapIntent.setPackage("com.google.android.apps.maps")
             if (mapIntent.resolveActivity(holder.itemView.context.packageManager) != null) {

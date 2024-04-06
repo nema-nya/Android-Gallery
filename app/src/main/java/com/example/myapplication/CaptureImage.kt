@@ -27,15 +27,17 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 
+@Suppress("DEPRECATION")
 class CaptureImage : Fragment() {
 
 
-    lateinit var buttonFromCamera: Button
+    private lateinit var buttonFromCamera: Button
 
     private lateinit var pickImageFromCamera: ActivityResultLauncher<Intent>
     private lateinit var currentPhotoPath: String
     private lateinit var imageUri: Uri
 
+    @SuppressLint("SimpleDateFormat")
     private fun createImageFile(): File {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir: File? =
@@ -85,10 +87,10 @@ class CaptureImage : Fragment() {
                     val fragmentB = SavePicture()
                     val bundle = Bundle()
                     val p = currentPhotoPath.split("/")
-                    val fName = p.get(p.size - 1)
+                    val fName = p[p.size - 1]
                     Log.e("E", fName)
                     currentPhotoPath =
-                        moveImageToGallery(requireContext(), currentPhotoPath!!, fName)!!!!
+                        moveImageToGallery(requireContext(), currentPhotoPath!!, fName)!!
                     bundle.putString("image_path", currentPhotoPath)
                     fragmentB.arguments = bundle
                     Log.e("E", currentPhotoPath)
@@ -104,7 +106,7 @@ class CaptureImage : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_first, container, false)
-        buttonFromCamera = view.findViewById<Button>(R.id.button_capture_from_camera)
+        buttonFromCamera = view.findViewById(R.id.button_capture_from_camera)
 
         buttonFromCamera.setOnClickListener {
             val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)

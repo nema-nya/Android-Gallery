@@ -8,9 +8,9 @@ data class WeatherData(
 
 data class Main(
     val temp: Double,
-    val feels_like: Double,
-    val temp_min: Double,
-    val temp_max: Double,
+    val feelsLike: Double,
+    val tempMin: Double,
+    val tempMax: Double,
     val pressure: Int,
     val humidity: Int
 )

@@ -42,7 +42,7 @@ class SavePicture : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_second, container, false)
         imageView = view.findViewById(R.id.image_view)
-        var imagePath = arguments?.getString("image_path")
+        val imagePath = arguments?.getString("image_path")
 
         if (imagePath != null) {
             val file = File(imagePath)
@@ -89,7 +89,7 @@ class SavePicture : Fragment() {
         if (imagePath != null) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
             descText = view.findViewById(R.id.desc_text)
-            var desc = descText.text
+            val desc = descText.text
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 location?.let {
                     this.latitue = it.latitude

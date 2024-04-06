@@ -21,6 +21,7 @@ import com.example.myapplication.data.ImageDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 
 
 class ProfilePage : Fragment(), SensorEventListener {
@@ -76,7 +77,7 @@ class ProfilePage : Fragment(), SensorEventListener {
             val y = event.values[1]
             val z = event.values[2]
 
-            val speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000
+            val speed = abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000
 
             if (speed > SHAKE_THRESHOLD) {
                 val fragmentManager = activity?.supportFragmentManager
